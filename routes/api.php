@@ -10,14 +10,14 @@ use App\Http\Controllers\API\ForgotPasswordController;
 Route::post('register', [RegisterController::class, 'register']);
 Route::post('login', [AuthenticationController::class, 'login'])->middleware(["throttle:5,1"]);
 Route::post('verify_otp', [AuthenticationController::class, 'verify_otp']);
-Route::post('resend_otp', [AuthenticationController::class, 'resend_otp'])->middleware(["throttle:1,1"]);
-Route::post('forgot_password', [ForgotPasswordController::class, 'forgot_password'])->middleware(["throttle:1,1"]);
+Route::post('resend_otp', [AuthenticationController::class, 'resend_otp'])->middleware(["throttle:2,1"]);
+Route::post('forgot_password', [ForgotPasswordController::class, 'forgot_password'])->middleware(["throttle:2,1"]);
 Route::post('reset_password', [ForgotPasswordController::class, 'reset_password']);
 
 
 Route::middleware('auth:sanctum')->group(function() {
     
     // Logout
-    Route::post('logout', [RegisterController::class, 'logout']);
+    Route::post('logout', [AuthenticationController::class, 'logout']);
 
 });

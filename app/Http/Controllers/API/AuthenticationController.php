@@ -166,7 +166,7 @@ class AuthenticationController extends Controller
         $validator = Validator::make($request->all(), [
              
             'email' => 'required|email',
-            'password' => 'required|min:6|max:16',
+            'password' => 'required|min:6',
 
         ]); 
         
@@ -196,7 +196,7 @@ class AuthenticationController extends Controller
                 
                 // OTP Process 
                 $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
-                $expiresAt = now()->addMinutes(1); 
+                $expiresAt = now()->addMinutes(1);
     
                 // Save OTP in DB
                 OtpVerification::create([
@@ -279,26 +279,6 @@ class AuthenticationController extends Controller
 
     } 
 
-
-
-    public function logout(Request $request)
-    {
-        
-        $user = Auth::user(); 
-        $user->token()->revoke();
-
-        if($user){
-            activity()->useLog('Logout')->causedBy($user)->withProperties($user)->log('You have Been Logout');
-        }
-
-        return response()->json([
-            
-            'status_code' => Response::HTTP_OK,
-            'message' => 'Successfully logged out'
-        
-        ], Response::HTTP_OK);
-
-    }
 
 
     public function verify_otp(Request $request)
@@ -439,5 +419,35 @@ class AuthenticationController extends Controller
         }
 
     }
+
+
+    public function logout(Request $request)
+    {
+        
+        try {
+            // Get the authenticated user
+            $user = Auth::user();
+            
+            // Revoke the token that was used to authenticate the current request
+            $user->currentAccessToken()->delete();
+    
+            if($user){
+                activity()->useLog('Logout')->causedBy($user)->withProperties($user)->log('You have been logged out');
+            }
+    
+            return response()->json([
+                'status_code' => Response::HTTP_OK,
+                'message' => 'Successfully logged out',
+            ], Response::HTTP_OK);
+    
+        } catch (\Exception $e) {
+            return response()->json([
+                'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => $e->getMessage(),
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+    }
+    
 
 }

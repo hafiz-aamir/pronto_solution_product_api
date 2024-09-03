@@ -42,11 +42,11 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Reset Password Token</h1>
+            <h1>Reset Password Code</h1>
         </div>
         <div class="content">
             
-            <p> {{ $details['token'] }} </p>
+            <p> <h1> {{ $details['token'] }} </h1> </p>
             
             <br><br>
 

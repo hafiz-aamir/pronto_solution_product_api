@@ -49,12 +49,12 @@ class ForgotPasswordController extends Controller
 
             $delete_old_token = Password_reset_token::where('email',$request->email)->delete();
              
-            $token = Str::random(64);
-            // $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
+            // $token = Str::random(64);
+            $otp = str_pad(random_int(0, 999999), 6, '0', STR_PAD_LEFT);
              
             $save_token = Password_reset_token::insert([
                 'email' => $request->email, 
-                'token' => $token, 
+                'token' => $otp, 
                 'created_at' => Carbon::now()
             ]);
 
@@ -69,7 +69,7 @@ class ForgotPasswordController extends Controller
                         'Email'   => $request->email,
                         'WebsiteName'   => config('app.name'),
                         'currentDate'   => Carbon::now()->format('d-M-Y'),
-                        'token'         => $token
+                        'token'         => $otp
                     ]
                 
                 ]; 
@@ -88,19 +88,19 @@ class ForgotPasswordController extends Controller
                             
                         return response()->json([
                             'status_code' => Response::HTTP_OK,
-                            'message' => 'Password reset link has been sent',
-                            'token' => $token,
+                            'message' => 'Password reset code has been sent',
+                            // 'token' => $otp,
                         ], Response::HTTP_OK);
     
                     } catch (\Exception $e) {
     
                         // Log the error
-                        Log::error('Failed to send Password reset link: ' . $e->getMessage());
+                        Log::error('Failed to send Password reset code: ' . $e->getMessage());
             
                         // Handle server error
                         return response()->json([
                             'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                            'message' => 'Failed to send Password reset link',
+                            'message' => 'Failed to send Password reset code',
                         ], Response::HTTP_INTERNAL_SERVER_ERROR);
     
                     }
@@ -129,7 +129,7 @@ class ForgotPasswordController extends Controller
        
         // dd($request->all());
         
-        $request->validate([
+        $validator = Validator::make($request->all(), [
           
           'email' => 'required|email|exists:users,email',
           'token' => 'required',
@@ -138,6 +138,19 @@ class ForgotPasswordController extends Controller
         
         ]);
         
+        if($validator->fails()) {
+                
+            $message = $validator->messages();
+            
+            return response()->json([
+                
+                'status_code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                'errors' => strval($validator->errors())
+            
+            ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+        }
+
         $updatePassword = Password_reset_token::where(['email' => $request->email,'token' => $request->token])->get();
 
         if(count($updatePassword) > 0){
@@ -187,12 +200,12 @@ class ForgotPasswordController extends Controller
             }catch (\Exception $e) {
 
                 // Log the error
-                Log::error('Failed to send reset password link: ' . $e->getMessage());
+                Log::error('Failed to send reset password code: ' . $e->getMessage());
     
                 // Handle server error
                 return response()->json([
                     'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
-                    'message' => 'Failed to send reset password link',
+                    'message' => 'Failed to send reset password code',
                 ], Response::HTTP_INTERNAL_SERVER_ERROR);
 
             }
