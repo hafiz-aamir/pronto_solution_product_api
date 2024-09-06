@@ -5,6 +5,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthenticationController;
 use App\Http\Controllers\API\RegisterController;
 use App\Http\Controllers\API\ForgotPasswordController;
+use App\Http\Controllers\API\PlanController;
 
 
 Route::post('register', [RegisterController::class, 'register']);
@@ -20,4 +21,11 @@ Route::middleware('auth:sanctum')->group(function() {
     // Logout
     Route::post('logout', [AuthenticationController::class, 'logout']);
 
-});
+
+    Route::post('add_plan', [PlanController::class, 'add_plan']);
+    Route::get('edit_plan/{uuid?}', [PlanController::class, 'edit_plan']);
+    Route::post('update_plan', [PlanController::class, 'update_plan']);
+    Route::delete('delete_plan/{uuid?}', [PlanController::class, 'delete_plan']);
+    Route::get('get_plan/{uuid?}', [PlanController::class, 'get_plan']);
+    
+}); 

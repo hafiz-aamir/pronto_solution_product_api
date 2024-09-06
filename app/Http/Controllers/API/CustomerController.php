@@ -22,5 +22,7 @@ use Illuminate\Support\Str;
 
 class CustomerController extends Controller
 {
-    //
+    
+    
+
 }
