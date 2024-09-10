@@ -14,23 +14,20 @@ use Hash;
 use DB;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
-use App\Models\Plan;
-use App\Models\PlanDetail;
+use App\Models\Invitation;
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Str;
 
 
-class PlanController extends Controller
+class InvitationController extends Controller
 {
     
-    public function add_plan(Request $request){
+    public function add_invitation(Request $request){
         
         $validator = Validator::make($request->all(), [
              
-            'name' => 'required',
-            'description' => 'required',
-            'type' => 'required',
-            'amount' => 'required',
+            'team_email' => 'required',
+            'team_role' => 'required',
             'status' => 'required',
         
         ]);
@@ -50,32 +47,32 @@ class PlanController extends Controller
     
         try {
     
-            $check_if_already = Plan::where('name', $request->name)->where('type', $request->type)->first();
+            $check_if_already = Invitation::where('team_email', $request->team_email)->where('team_role', $request->team_role)->first();
     
             if($check_if_already){
     
                 return response()->json([
     
                     'status_code' => Response::HTTP_CONFLICT,
-                    'message' => 'This Plan has already been taken.',
+                    'message' => 'This Invitation Detail has already been taken.',
     
-                ], Response::HTTP_CONFLICT); // 409 Conflict 
+                ], Response::HTTP_CONFLICT);
     
     
             }else{
     
-                $plan = $request->all();
-                $plan['uuid'] = Str::uuid();
-                $plan['auth_id'] = Auth::user()->uuid;
+                $invitation = $request->all();
+                $invitation['uuid'] = Str::uuid();
+                $invitation['auth_id'] = Auth::user()->uuid;
     
-                $save_Plan = Plan::create($plan);
+                $save_invitation = Invitation::create($invitation);
     
-                if($save_Plan){ 
+                if($save_invitation){ 
                     
                     return response()->json([
                             
                         'status_code' => Response::HTTP_CREATED,
-                        'message' => 'Plan add successfully',
+                        'message' => 'Invitation add successfully',
     
                     ], Response::HTTP_CREATED);
     
@@ -85,31 +82,31 @@ class PlanController extends Controller
             
         
         }catch (\Exception $e) { 
-            // Handle general exceptions
+            
             return response()->json([
     
                 'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => 'Server error',
-                'error' => $e->getMessage(),
+                // 'error' => $e->getMessage(),
     
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); // 500 Internal Server Error
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
         
     
     }
 
 
-    public function edit_plan($uuid){
+    public function edit_invitation($uuid){
 
-        $edit_plan = Plan::where('uuid', $uuid)->first();
+        $edit_invitation = Invitation::where('uuid', $uuid)->first();
 
-        if($edit_plan)
+        if($edit_invitation)
         {
 
             return response()->json([
 
                 'status_code' => Response::HTTP_OK,
-                'data' => $edit_plan,
+                'data' => $edit_invitation,
 
             ], Response::HTTP_OK);
 
@@ -129,14 +126,12 @@ class PlanController extends Controller
     }
 
 
-    public function update_plan(Request $request){
+    public function update_invitation(Request $request){
         
         $validator = Validator::make($request->all(), [
              
-            'name' => 'required',
-            'description' => 'required',
-            'type' => 'required',
-            'amount' => 'required',
+            'team_email' => 'required',
+            'team_role' => 'required',
             'status' => 'required',
         
         ]);
@@ -158,9 +153,9 @@ class PlanController extends Controller
         try{
             
             $uuid = request()->header('uuid');
-            $upd_plan = Plan::where('uuid', $uuid)->first();
+            $upd_invitation = Invitation::where('uuid', $uuid)->first();
 
-            if (!$upd_plan) {
+            if (!$upd_invitation) {
 
                 return response()->json([
 
@@ -171,21 +166,19 @@ class PlanController extends Controller
 
             }
 
-            $upd_plan['auth_id'] = Auth::user()->uuid;
-            $upd_plan['description'] = $request->description;
-            $upd_plan['type'] = $request->type;
-            $upd_plan['amount'] = $request->amount;
-            $upd_plan['status'] = $request->status;
+            $upd_invitation['auth_id'] = Auth::user()->uuid;
+            $upd_invitation['team_email'] = $request->team_email;
+            $upd_invitation['team_role'] = $request->team_role;
+            $upd_invitation['status'] = $request->status; 
 
+            $update_invitation = $upd_invitation->save();
 
-            $update_plan = $upd_plan->save();
-
-            if($update_plan){
+            if($update_invitation){
                 
                 return response()->json([
                     
                     'status_code' => Response::HTTP_OK,
-                    'message' => 'Plan has been updated',
+                    'message' => 'Invitation has been updated',
                 
                 ], Response::HTTP_OK);
 
@@ -198,7 +191,7 @@ class PlanController extends Controller
 
                 'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => 'Server error',
-                'error' => $e->getMessage(),
+                // 'error' => $e->getMessage(),
 
             ], Response::HTTP_INTERNAL_SERVER_ERROR); // 500 Internal Server Error
         }
@@ -207,13 +200,13 @@ class PlanController extends Controller
     }
 
 
-    public function delete_plan($uuid){
+    public function delete_invitation($uuid){
 
         try{
 
-            $del_plan = Plan::where('uuid', $uuid)->first();
+            $del_invitation = Invitation::where('uuid', $uuid)->first();
             
-            if(!$del_plan)
+            if(!$del_invitation)
             {
                 
                 return response()->json([
@@ -226,14 +219,14 @@ class PlanController extends Controller
 
             }else{
 
-                $delete_plan = Plan::destroy($del_plan->id);
+                $delete_invitation = Invitation::destroy($del_invitation->id);
 
-                if($delete_plan){
+                if($delete_invitation){
                 
                     return response()->json([
                         
                         'status_code' => Response::HTTP_OK,
-                        'message' => 'Plan has been deleted',
+                        'message' => 'Invitation has been deleted',
                     
                     ], Response::HTTP_OK);
     
@@ -257,34 +250,16 @@ class PlanController extends Controller
 
 
     
-    public function get_plan(){
+    public function get_invitation(){
 
-        $get_all_plans = Plan::all();
+        $get_all_invitation = Invitation::all();
     
-        if($get_all_plans){
+        if($get_all_invitation){
             
             return response()->json([
                     
                 'status_code' => Response::HTTP_OK,
-                'data' => $get_all_plans,
-    
-            ], Response::HTTP_OK);
-    
-        }
-    
-    }
-
-
-    public function get_plan_with_details(){
-
-        $get_all_plans = Plan::with('details')->get();
-    
-        if($get_all_plans){
-            
-            return response()->json([
-                    
-                'status_code' => Response::HTTP_OK,
-                'data' => $get_all_plans,
+                'data' => $get_all_invitation,
     
             ], Response::HTTP_OK);
     

@@ -11,16 +11,14 @@ return new class extends Migration
      */
     public function up(): void
     {
-        Schema::create('plans', function (Blueprint $table) {
-           
-            $table->id(); 
+        Schema::create('invitations', function (Blueprint $table) {
+            
+            $table->id();
             $table->uuid('uuid')->unique();
-            $table->string('name', 255); 
-            $table->longText('description')->nullable(); 
-            $table->string('type', 255); 
-            $table->string('amount', 255); 
-            $table->boolean('status')->default(1); 
-            $table->string('auth_id')->default(1);
+            $table->string('auth_id');
+            $table->string('team_email');
+            $table->string('team_role');
+            $table->string('status');
             $table->timestamps();
 
         });
@@ -31,6 +29,6 @@ return new class extends Migration
      */
     public function down(): void
     {
-        Schema::dropIfExists('plans');
+        Schema::dropIfExists('invitations');
     }
 };

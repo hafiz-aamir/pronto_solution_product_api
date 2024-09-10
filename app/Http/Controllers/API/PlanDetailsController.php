@@ -14,23 +14,20 @@ use Hash;
 use DB;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon;
-use App\Models\Plan;
 use App\Models\PlanDetail;
 use Spatie\Activitylog\Models\Activity;
 use Illuminate\Support\Str;
 
 
-class PlanController extends Controller
+class PlanDetailsController extends Controller
 {
     
-    public function add_plan(Request $request){
+    public function add_plandetails(Request $request){
         
         $validator = Validator::make($request->all(), [
              
             'name' => 'required',
-            'description' => 'required',
-            'type' => 'required',
-            'amount' => 'required',
+            'plan_id' => 'required',
             'status' => 'required',
         
         ]);
@@ -50,32 +47,32 @@ class PlanController extends Controller
     
         try {
     
-            $check_if_already = Plan::where('name', $request->name)->where('type', $request->type)->first();
+            $check_if_already = PlanDetail::where('name', $request->name)->where('plan_id', $request->plan_id)->first();
     
             if($check_if_already){
     
                 return response()->json([
     
                     'status_code' => Response::HTTP_CONFLICT,
-                    'message' => 'This Plan has already been taken.',
+                    'message' => 'This Plan Detail Detail has already been taken.',
     
-                ], Response::HTTP_CONFLICT); // 409 Conflict 
+                ], Response::HTTP_CONFLICT);
     
     
             }else{
     
-                $plan = $request->all();
-                $plan['uuid'] = Str::uuid();
-                $plan['auth_id'] = Auth::user()->uuid;
+                $planDetail = $request->all();
+                $planDetail['uuid'] = Str::uuid();
+                $planDetail['auth_id'] = Auth::user()->uuid;
     
-                $save_Plan = Plan::create($plan);
+                $save_plandetails = PlanDetail::create($planDetail);
     
-                if($save_Plan){ 
+                if($save_plandetails){ 
                     
                     return response()->json([
                             
                         'status_code' => Response::HTTP_CREATED,
-                        'message' => 'Plan add successfully',
+                        'message' => 'Plan Detail add successfully',
     
                     ], Response::HTTP_CREATED);
     
@@ -85,31 +82,31 @@ class PlanController extends Controller
             
         
         }catch (\Exception $e) { 
-            // Handle general exceptions
+            
             return response()->json([
     
                 'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => 'Server error',
-                'error' => $e->getMessage(),
+                // 'error' => $e->getMessage(),
     
-            ], Response::HTTP_INTERNAL_SERVER_ERROR); // 500 Internal Server Error
+            ], Response::HTTP_INTERNAL_SERVER_ERROR); 
         }
         
     
     }
 
 
-    public function edit_plan($uuid){
+    public function edit_plandetails($uuid){
 
-        $edit_plan = Plan::where('uuid', $uuid)->first();
+        $edit_plandetails = PlanDetail::where('uuid', $uuid)->first();
 
-        if($edit_plan)
+        if($edit_plandetails)
         {
 
             return response()->json([
 
                 'status_code' => Response::HTTP_OK,
-                'data' => $edit_plan,
+                'data' => $edit_plandetails,
 
             ], Response::HTTP_OK);
 
@@ -129,14 +126,12 @@ class PlanController extends Controller
     }
 
 
-    public function update_plan(Request $request){
+    public function update_plandetails(Request $request){
         
         $validator = Validator::make($request->all(), [
              
             'name' => 'required',
-            'description' => 'required',
-            'type' => 'required',
-            'amount' => 'required',
+            'plan_id' => 'required',
             'status' => 'required',
         
         ]);
@@ -158,9 +153,9 @@ class PlanController extends Controller
         try{
             
             $uuid = request()->header('uuid');
-            $upd_plan = Plan::where('uuid', $uuid)->first();
+            $upd_plandetails = PlanDetail::where('uuid', $uuid)->first();
 
-            if (!$upd_plan) {
+            if (!$upd_plandetails) {
 
                 return response()->json([
 
@@ -171,21 +166,19 @@ class PlanController extends Controller
 
             }
 
-            $upd_plan['auth_id'] = Auth::user()->uuid;
-            $upd_plan['description'] = $request->description;
-            $upd_plan['type'] = $request->type;
-            $upd_plan['amount'] = $request->amount;
-            $upd_plan['status'] = $request->status;
+            $upd_plandetails['auth_id'] = Auth::user()->uuid;
+            $upd_plandetails['name'] = $request->name;
+            $upd_plandetails['plan_id'] = $request->plan_id;
+            $upd_plandetails['status'] = $request->status; 
 
+            $update_plandetails = $upd_plandetails->save();
 
-            $update_plan = $upd_plan->save();
-
-            if($update_plan){
+            if($update_plandetails){
                 
                 return response()->json([
                     
                     'status_code' => Response::HTTP_OK,
-                    'message' => 'Plan has been updated',
+                    'message' => 'Plan Detail has been updated',
                 
                 ], Response::HTTP_OK);
 
@@ -198,7 +191,7 @@ class PlanController extends Controller
 
                 'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
                 'message' => 'Server error',
-                'error' => $e->getMessage(),
+                // 'error' => $e->getMessage(),
 
             ], Response::HTTP_INTERNAL_SERVER_ERROR); // 500 Internal Server Error
         }
@@ -207,13 +200,13 @@ class PlanController extends Controller
     }
 
 
-    public function delete_plan($uuid){
+    public function delete_plandetails($uuid){
 
         try{
 
-            $del_plan = Plan::where('uuid', $uuid)->first();
+            $del_plandetails = PlanDetail::where('uuid', $uuid)->first();
             
-            if(!$del_plan)
+            if(!$del_plandetails)
             {
                 
                 return response()->json([
@@ -226,14 +219,14 @@ class PlanController extends Controller
 
             }else{
 
-                $delete_plan = Plan::destroy($del_plan->id);
+                $delete_plandetails = PlanDetail::destroy($del_plandetails->id);
 
-                if($delete_plan){
+                if($delete_plandetails){
                 
                     return response()->json([
                         
                         'status_code' => Response::HTTP_OK,
-                        'message' => 'Plan has been deleted',
+                        'message' => 'Plan Detail has been deleted',
                     
                     ], Response::HTTP_OK);
     
@@ -257,34 +250,16 @@ class PlanController extends Controller
 
 
     
-    public function get_plan(){
+    public function get_plandetails(){
 
-        $get_all_plans = Plan::all();
+        $get_all_plandetails = PlanDetail::all();
     
-        if($get_all_plans){
+        if($get_all_plandetails){
             
             return response()->json([
                     
                 'status_code' => Response::HTTP_OK,
-                'data' => $get_all_plans,
-    
-            ], Response::HTTP_OK);
-    
-        }
-    
-    }
-
-
-    public function get_plan_with_details(){
-
-        $get_all_plans = Plan::with('details')->get();
-    
-        if($get_all_plans){
-            
-            return response()->json([
-                    
-                'status_code' => Response::HTTP_OK,
-                'data' => $get_all_plans,
+                'data' => $get_all_plandetails,
     
             ], Response::HTTP_OK);
     

@@ -8,18 +8,16 @@ use Spatie\Activitylog\Traits\LogsActivity;
 use Spatie\Activitylog\LogOptions;
 
 
-class Plan extends Model
+class PlanDetail extends Model
 {
     use HasFactory, LogsActivity;
 
-    protected $table = 'plans';
+    protected $table = 'plan_details';
 
     protected $fillable = [
         'uuid',
         'name',
-        'description',
-        'type',
-        'amount',
+        'plan_id',
         'status',
         'auth_id'
     ];
@@ -39,16 +37,11 @@ class Plan extends Model
     {
         
         return LogOptions::defaults()
-        ->useLogName('Plan') // Set custom log name
-        ->logOnly(['uuid', 'name', 'description', 'type', 'amount', 'status', 'auth_id','created_at','updated_at','deleted_at'])
-        ->setDescriptionForEvent(fn(string $eventName) => "Plan {$eventName} successfully");  
+        ->useLogName('Plan Detail') // Set custom log name
+        ->logOnly(['uuid', 'name', 'plan_id', 'status', 'auth_id', 'created_at', 'updated_at', 'deleted_at'])
+        ->setDescriptionForEvent(fn(string $eventName) => "Plan Detail {$eventName} successfully"); 
 
     }
 
-
-    public function details()
-    {
-        return $this->hasMany(PlanDetail::class, 'plan_id', 'id'); 
-    }
 
 }
