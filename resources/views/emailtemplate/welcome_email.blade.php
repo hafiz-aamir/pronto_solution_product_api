@@ -42,7 +42,7 @@
 <body>
     <div class="container">
         <div class="header">
-            <h1>Welcome to the Team!</h1>
+            <h1>Welcome to the CRM</h1>
         </div>
         <div class="content">
             <p>Hello {{$details['hi_message']}}, </p>

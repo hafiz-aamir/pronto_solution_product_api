@@ -13,6 +13,7 @@ use Session;
 use Hash;
 use DB;
 use App\Models\User;
+use App\Models\Invitation;
 use App\Models\OtpVerification;
 use Illuminate\Support\Facades\Validator;
 use Carbon\Carbon; 
@@ -28,13 +29,10 @@ class RegisterController extends Controller
 
             $validator = Validator::make($request->all(), [
                 
-                'first_name' => 'required|regex:/^[a-zA-Z0-9\s\-]+$/',
-                'last_name' => 'required|regex:/^[a-zA-Z0-9\s\-]+$/',
+                'first_name' => 'required',
+                'last_name' => 'required',
                 'email' => 'required|email',
                 'password' => 'required|min:6|max:16',
-                'role_id' => 'required|numeric',
-                'image' => 'nullable|image|mimes:jpeg,png,jpg,gif,svg|max:2048',
-                'auth_id' => 'required',
                 
             ]); 
             
@@ -54,28 +52,10 @@ class RegisterController extends Controller
 
             $user = $request->all();
             $user['uuid'] = Str::uuid();
-            $user['password'] = bcrypt($user['password']);
+            $user['password'] = bcrypt($request->password);
+            $user['role_id'] = "2";
             $user['ip'] = $request->ip();
-
-            if ($request->hasFile('image')) {
-                $file = $request->file('image');
-                $fileName = time() . '_' . $file->getClientOriginalName(); // Prepend timestamp for unique filename
-                $folderName = '/upload_files/users/';
-                $destinationPath = public_path() . $folderName;
         
-                // Ensure the directory exists, if not create it
-                if (!file_exists($destinationPath)) {
-                    mkdir($destinationPath, 0755, true);
-                }
-        
-                // Move the file to the destination path
-                $file->move($destinationPath, $fileName);
-        
-                // Update the menu's icon path
-                $user['image'] = $folderName . $fileName;
-            }
-
-            
             $save_user = User::create($user);
             
             // $access_Token = $save_user->createToken('MyToken')->accessToken; 
@@ -104,7 +84,7 @@ class RegisterController extends Controller
                 //  dd($data);
                 
                 // User Email
-                Mail::send('emailtemplate/welcome_email_template', $data, function($message) use ($data){
+                Mail::send('emailtemplate/welcome_email', $data, function($message) use ($data){
                 
                     $message->from($data['details']['FromEmail'], $data['details']['WebsiteName']); 
                     
@@ -117,7 +97,7 @@ class RegisterController extends Controller
                     
                     'status_code' => 201,
                     'message' => 'Registration Successfull',
-                    // 'accessToken' => $access_Token, 
+                    'uuid' => $save_user->uuid
 
                 ], 201);
 
@@ -160,6 +140,244 @@ class RegisterController extends Controller
     }
 
 
+    public function bring_you_here_today(Request $request){ 
+    
+        try {
+            
+
+            $validator = Validator::make($request->all(), [
+                
+                'bring_you_here_today' => 'required',
+                
+            ]); 
+            
+            
+            if($validator->fails()) {
+                
+                $message = $validator->messages();
+                
+                return response()->json([
+                    
+                    'status_code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                    'errors' => strval($validator->errors())
+                
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+            }
+
+            $uuid = request()->header('user-uuid');
+            $upd_user = User::where('uuid', $uuid)->first();
+
+            if($upd_user)
+            {
+
+                $upd_user->bring_you_here_today = $request->bring_you_here_today;
+                $updated = $upd_user->save();
+                
+                if($updated)
+                {
+
+                    return response()->json([
+
+                        'status_code' => Response::HTTP_OK,
+                        'message' => 'Record has been updated',
+    
+                    ], Response::HTTP_OK);
+
+                }
+                
+            }
+            else{
+
+                return response()->json([
+
+                    'status_code' => Response::HTTP_NOT_FOUND,
+                    'message' => 'No Record Found',
+
+                ], Response::HTTP_NOT_FOUND);
+
+            }
+
+
+        }catch (\Exception $e) { 
+            
+            return response()->json([
+
+                'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => 'Server error',
+                'error' => $e->getMessage(),
+
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+
+
+    public function do_you_heard_about_us(Request $request){ 
+    
+        try {
+            
+
+            $validator = Validator::make($request->all(), [
+                
+                'do_you_heard_about_us' => 'required',
+                
+            ]); 
+            
+            
+            if($validator->fails()) {
+                
+                $message = $validator->messages();
+                
+                return response()->json([
+                    
+                    'status_code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                    'errors' => strval($validator->errors())
+                
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+            }
+
+            $uuid = request()->header('user-uuid');
+            $upd_user = User::where('uuid', $uuid)->first();
+
+            if($upd_user)
+            {
+
+                $upd_user->do_you_heard_about_us = $request->do_you_heard_about_us;
+                $updated = $upd_user->save();
+                
+                if($updated)
+                {
+
+                    return response()->json([
+
+                        'status_code' => Response::HTTP_OK,
+                        'message' => 'Record has been updated',
+    
+                    ], Response::HTTP_OK);
+
+                }
+                
+            }
+            else{
+
+                return response()->json([
+
+                    'status_code' => Response::HTTP_NOT_FOUND,
+                    'message' => 'No Record Found',
+
+                ], Response::HTTP_NOT_FOUND);
+
+            }
+
+
+        }catch (\Exception $e) { 
+            
+            return response()->json([
+
+                'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => 'Server error',
+                'error' => $e->getMessage(),
+
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+    
+    public function add_invite(Request $request){ 
+    
+        try {
+            
+
+            $validator = Validator::make($request->all(), [
+                
+               'team_member' => 'required|string'
+                
+            ]);
+            
+            
+            if($validator->fails()) {
+                
+                $message = $validator->messages();
+                
+                return response()->json([
+                    
+                    'status_code' => Response::HTTP_UNPROCESSABLE_ENTITY,
+                    'errors' => strval($validator->errors())
+                
+                ], Response::HTTP_UNPROCESSABLE_ENTITY);
+
+            }
+
+            $uuid = request()->header('user-uuid');
+            $user = User::where('uuid', $uuid)->first();
+
+            if($user)
+            {
+
+                // Decode the JSON string to an array
+                $teamMembers = json_decode($request->team_member, true);
+
+                if (is_array($teamMembers)) {
+                    // Loop through the decoded array
+                    foreach ($teamMembers as $member) {
+                        // Validate each member's data
+                        if (isset($member['team_email'], $member['team_role'])) {
+                            // Save each member's data in the invitations table using the Invitation model
+                            Invitation::create([
+                                'uuid' => (string) Str::uuid(),
+                                'auth_id' => $user->uuid, // Assuming you're using Laravel's Auth system
+                                'team_email' => $member['team_email'],
+                                'team_role' => $member['team_role'],
+                                'status' => 1, // Set status as active or any default value
+                                'created_at' => now(),
+                                'updated_at' => now(),
+                            ]);
+                        }
+                    }
+                    
+                    return response()->json([
+                        'status_code' => 201,
+                        'message' => 'Team members invited successfully.'
+                    ], 201);
+
+                    } else {
+                        return response()->json([
+                            'status_code' => 400,
+                            'error' => 'Invalid team_member data format.'
+                        ], 400);
+                    }
+                
+            }
+            else{
+
+                return response()->json([
+
+                    'status_code' => Response::HTTP_NOT_FOUND,
+                    'message' => 'No Record Found',
+
+                ], Response::HTTP_NOT_FOUND);
+
+            }
+
+
+        }catch (\Exception $e) { 
+            
+            return response()->json([
+
+                'status_code' => Response::HTTP_INTERNAL_SERVER_ERROR,
+                'message' => 'Server error',
+                'error' => $e->getMessage(),
+
+            ], Response::HTTP_INTERNAL_SERVER_ERROR);
+        }
+
+    }
+
+
     // Login Via API
     public function login(Request $request){
 
@@ -167,7 +385,7 @@ class RegisterController extends Controller
         $validator = Validator::make($request->all(), [
              
             'email' => 'required|email',
-            'password' => 'required|min:6|max:16',
+            'password' => 'required',
 
         ]); 
         

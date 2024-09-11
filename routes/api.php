@@ -8,7 +8,7 @@ use App\Http\Controllers\API\ForgotPasswordController;
 use App\Http\Controllers\API\PlanController;
 use App\Http\Controllers\API\PlanDetailsController;
 use App\Http\Controllers\API\InvitationController;
-
+use App\Http\Controllers\API\StripePaymentController;
 
 
 Route::post('register', [RegisterController::class, 'register']);
@@ -18,12 +18,14 @@ Route::post('resend_otp', [AuthenticationController::class, 'resend_otp'])->midd
 Route::post('forgot_password', [ForgotPasswordController::class, 'forgot_password'])->middleware(["throttle:2,1"]);
 Route::post('reset_password', [ForgotPasswordController::class, 'reset_password']);
 
+Route::post('bring_you_here_today', [RegisterController::class, 'bring_you_here_today']);
+Route::post('do_you_heard_about_us', [RegisterController::class, 'do_you_heard_about_us']);
+Route::post('add_invite', [RegisterController::class, 'add_invite']);
 
 Route::middleware('auth:sanctum')->group(function() {
     
     // Logout
     Route::post('logout', [AuthenticationController::class, 'logout']);
-
 
     Route::post('add_plan', [PlanController::class, 'add_plan']);
     Route::get('edit_plan/{uuid?}', [PlanController::class, 'edit_plan']);
@@ -45,6 +47,9 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::post('update_invitation', [InvitationController::class, 'update_invitation']);
     Route::delete('delete_invitation/{uuid?}', [InvitationController::class, 'delete_invitation']);
     Route::get('get_invitation', [InvitationController::class, 'get_invitation']);
+    
+
+    Route::get('pay_via_stripe', [StripePaymentController::class, 'pay_via_stripe']);
     
     
 }); 
