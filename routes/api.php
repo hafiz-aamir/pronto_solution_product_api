@@ -4,12 +4,15 @@ use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\API\AuthenticationController;
 use App\Http\Controllers\API\RegisterController;
+use App\Http\Controllers\API\LeadController;
 use App\Http\Controllers\API\ForgotPasswordController;
 use App\Http\Controllers\API\PlanController;
 use App\Http\Controllers\API\PlanDetailsController;
 use App\Http\Controllers\API\InvitationController;
 use App\Http\Controllers\API\StripePaymentController;
 
+
+Route::prefix('v1')->group(function () {
 
 Route::post('register', [RegisterController::class, 'register']);
 Route::post('login', [AuthenticationController::class, 'login'])->middleware(["throttle:5,1"]);
@@ -21,6 +24,9 @@ Route::post('reset_password', [ForgotPasswordController::class, 'reset_password'
 Route::post('bring_you_here_today', [RegisterController::class, 'bring_you_here_today']);
 Route::post('do_you_heard_about_us', [RegisterController::class, 'do_you_heard_about_us']);
 Route::post('add_invite', [RegisterController::class, 'add_invite']);
+
+Route::post('/add-leads', [LeadController::class, 'add_lead_by_api']);
+Route::get('/get-lead', [LeadController::class, 'get_lead']);
 
 Route::middleware('auth:sanctum')->group(function() {
     
@@ -52,4 +58,7 @@ Route::middleware('auth:sanctum')->group(function() {
     Route::get('pay_via_stripe', [StripePaymentController::class, 'pay_via_stripe']);
     
     
+}); 
+
+
 }); 

@@ -17,6 +17,7 @@ class StripePaymentController extends Controller
         Stripe::setApiKey(env('STRIPE_SECRET'));
 
         try {
+
             // Stripe payment intent ko create karein
             $paymentIntent = \Stripe\PaymentIntent::create([
                 'amount' => $request->amount * 100, // Amount in cents
@@ -37,6 +38,5 @@ class StripePaymentController extends Controller
         }
 
     }
-
 
 }
